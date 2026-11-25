@@ -25,6 +25,12 @@ class _TelemetryHistoryTabState extends State<TelemetryHistoryTab> {
   DateTimeRange _range = defaultRange(2);
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _asset = firstAllowedAsset(context, _asset);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final params = MockData.telemetryFor(_asset.assetTypeCode)
         .where((p) => double.tryParse(p.value) != null)

@@ -25,6 +25,12 @@ class _TelemetryLiveTabState extends State<TelemetryLiveTab> {
   String _view = 'Table';
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _asset = firstAllowedAsset(context, _asset);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final params = MockData.telemetryFor(_asset.assetTypeCode);
     final isPoint = _asset.assetTypeCode == 'EOP';

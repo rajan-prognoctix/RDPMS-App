@@ -9,6 +9,7 @@ import '../../../../core/widgets/app_data_table.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../../core/widgets/filter_bar.dart';
 import '../../../../core/widgets/gradient_button.dart';
+import '../../../auth/presentation/bloc/auth_context.dart';
 
 /// Performance of RDPMS (§14, Annex D §15, Annex E §12). Target > 60 %.
 class PerformancePage extends StatefulWidget {
@@ -44,11 +45,12 @@ class _PerformancePageState extends State<PerformancePage> {
         appBar: AppBar(
           title: const Text('Performance of RDPMS'),
           actions: [
-            TextButton.icon(
-              onPressed: () => _showActualFailureEntry(context),
-              icon: const Icon(Icons.add_task),
-              label: const Text('Actual Failure entry'),
-            ),
+            if (context.watchRole().canEnterActualFailures)
+              TextButton.icon(
+                onPressed: () => _showActualFailureEntry(context),
+                icon: const Icon(Icons.add_task),
+                label: const Text('Actual Failure entry'),
+              ),
           ],
         ),
         body: ListView(

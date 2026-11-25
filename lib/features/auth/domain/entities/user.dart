@@ -1,17 +1,17 @@
 import 'package:equatable/equatable.dart';
+import '../../../../core/auth/user_role.dart';
+import '../../data/models/login_response_model.dart';
 
-/// Pure domain entity — no JSON, no Flutter imports.
 class User extends Equatable {
-  final String id;
-  final String name;
-  final String email;
+  final UserData? data;
 
   const User({
-    required this.id,
-    required this.name,
-    required this.email,
+    required this.data,
   });
 
+  /// User level from the login response; decides what the UI shows (§11.6).
+  UserRole get role => UserRole.fromCode(data?.role);
+
   @override
-  List<Object?> get props => [id, name, email];
+  List<Object?> get props => [data];
 }

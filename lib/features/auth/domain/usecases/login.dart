@@ -15,7 +15,7 @@ class Login implements UseCase<User, LoginParams> {
   @override
   Future<Either<Failure, User>> call(LoginParams params) async {
     final apiRequest = LoginRequestModel(
-      userId: params.username,
+      userId: params.userId,
       password: params.password,
       deviceId: params.deviceId,
       deviceType: params.deviceType,
@@ -27,12 +27,12 @@ class Login implements UseCase<User, LoginParams> {
 
 
 class LoginParams extends Equatable {
-  final String username;
+  final String userId;
   final String password;
   final String deviceId;
   final String deviceType;
-  const LoginParams({required this.username, required this.password, required this.deviceId, required this.deviceType});
+  const LoginParams({required this.userId, required this.password, required this.deviceId, required this.deviceType});
 
   @override
-  List<Object?> get props => [username, password, deviceId, deviceType];
+  List<Object?> get props => [userId, password, deviceId, deviceType];
 }

@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:rdpms_app/features/auth/data/models/login_request_model.dart';
-
+import '../../../../core/error/error_messages.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/user.dart';
@@ -8,33 +8,50 @@ import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_local_datasource.dart';
 import '../datasources/auth_remote_datasource.dart';
 
-/// Calls datasources and maps exceptions -> failures.
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remote;
   final AuthLocalDataSource local;
 
   AuthRepositoryImpl({required this.remote, required this.local});
 
-  /// Checks user id + password only. Nothing is saved on the device here:
-  /// the access token is saved after OTP verification (see OtpPage, §11.7).
   @override
   Future<Either<Failure, User>> login({
     required LoginRequestModel request,
   }) async {
     try {
-      final user = await remote.login(request: request);
-      return right(
-        User(
-          id: user.data?.userId ?? "",
-          name: user.data?.name ?? "",
-          email: user.data?.email ?? "",
-        ),
-      );
+      final response = await remote.login(request: request);
+      final data = response.data;
+      if (!response.success || data == null) {
+        return left(ServerFailure(
+          response.message.isNotEmpty ? response.message : ErrorMessages.server,
+        ));
+      }
+      await local.cacheUser(data);
+      return right(User(data: data));
     } on ServerException catch (e) {
       return left(ServerFailure(e.message));
     } on NetworkException catch (e) {
       return left(NetworkFailure(e.message));
+    } on FormatException catch (e) {
+      return left(ServerFailure(ErrorMessages.pick(
+        'Unexpected response from server: ${e.message}',
+        ErrorMessages.unexpectedResponse,
+      )));
+    } on TypeError catch (e) {
+      // Response JSON didn't match the expected model.
+      return left(ServerFailure(ErrorMessages.pick(
+        'Unexpected response from server: $e',
+        ErrorMessages.unexpectedResponse,
+      )));
+    } on Exception catch (e) {
+      return left(ServerFailure(ErrorMessages.pick(e.toString(), ErrorMessages.server)));
     }
+  }
+
+  @override
+  Future<Either<Failure, User?>> getCurrentUser() async {
+    final data = local.getCachedUser();
+    return right(data == null ? null : User(data: data));
   }
 
   @override

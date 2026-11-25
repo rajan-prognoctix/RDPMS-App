@@ -1,6 +1,9 @@
 // Lightweight view models for the UI-only phase.
 // These will be replaced by domain entities + repositories when the backend APIs are wired.
 
+// User roles (§11.6) live in core/auth so the app can check permissions.
+export '../auth/user_role.dart';
+
 enum AssetStatus { healthy, predictive, failure }
 
 /// alert_type_code (Annex D §1.1)
@@ -33,16 +36,6 @@ enum AlertFeedback {
   final String label;
 }
 
-/// User roles (§11.6)
-enum UserRole {
-  headQuarter('Head Quarter'),
-  division('Division'),
-  station('Station'),
-  guest('Guest');
-
-  const UserRole(this.label);
-  final String label;
-}
 
 class Zone {
   final String zc;
@@ -254,19 +247,6 @@ class StationPerformance {
     this.predAlertPer,
     this.actualFailAlertPer,
   );
-}
-
-class ConfigParameter {
-  final String name;
-  String value;
-  ConfigParameter(this.name, this.value);
-}
-
-class AuditLogEntry {
-  final DateTime time;
-  final String source;
-  final String detail;
-  const AuditLogEntry(this.time, this.source, this.detail);
 }
 
 class DashboardGroup {

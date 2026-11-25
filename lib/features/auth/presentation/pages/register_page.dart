@@ -110,7 +110,7 @@ class _RegisterPageState extends State<RegisterPage> {
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
-              children: UserRole.values
+              children: UserRole.selfSignUp
                   .map((r) => ChoiceChip(
                         label: Text(r.label),
                         selected: _role == r,

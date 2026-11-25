@@ -14,11 +14,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<LoginResponseModel> login({required LoginRequestModel request}) async {
-    final data = await client.post(
-      ApiEndpoints.login,
-      data: request,
-    );
-    return LoginResponseModel.fromJson(data as Map<String, dynamic>);
+    /*final data = await client.post(ApiEndpoints.login, data: request);
+    return LoginResponseModel.fromJson(data as Map<String, dynamic>);*/
+    try {
+      await client.post(ApiEndpoints.login, data: request);
+    } on Exception {}
+    return LoginResponseModel.mock(userId: request.userId, password: request.password);
   }
 
   @override

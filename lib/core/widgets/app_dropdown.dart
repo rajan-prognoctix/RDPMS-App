@@ -12,6 +12,10 @@ class AppDropdown<T> extends StatelessWidget {
   final ValueChanged<T?> onChanged;
   final bool allowAll;
 
+  /// False shows the value fixed (e.g. a level locked by the user's
+  /// jurisdiction) with a lock icon.
+  final bool enabled;
+
   const AppDropdown({
     super.key,
     required this.label,
@@ -20,11 +24,37 @@ class AppDropdown<T> extends StatelessWidget {
     required this.itemLabel,
     required this.onChanged,
     this.allowAll = true,
+    this.enabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
     final current = items.contains(value) ? value : null;
+    if (!enabled) {
+      return Semantics(
+        label: '$label: ${current == null ? 'All' : itemLabel(current as T)}, fixed',
+        child: Container(
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceMuted,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                current == null ? 'All $label' : itemLabel(current as T),
+                style: const TextStyle(fontSize: 13, color: AppColors.textMain),
+              ),
+              const SizedBox(width: 6),
+              const Icon(Icons.lock_outline, size: 14, color: AppColors.textMuted),
+            ],
+          ),
+        ),
+      );
+    }
     return Container(
       height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 10),

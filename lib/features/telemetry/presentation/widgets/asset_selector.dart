@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/auth/jurisdiction.dart';
 import '../../../../core/mock/mock_data.dart';
 import '../../../../core/mock/mock_models.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/app_dropdown.dart';
+
+/// First asset the signed-in user may see (their jurisdiction), else [fallback].
+Asset firstAllowedAsset(BuildContext context, Asset fallback) {
+  final j = Jurisdiction.of(context);
+  if (j.allowsStation(fallback.sc)) return fallback;
+  return MockData.assets.where((a) => j.allowsStation(a.sc)).firstOrNull ?? fallback;
+}
 
 /// Station ▸ Asset type ▸ Asset number selector used by Telemetry pages.
 class AssetSelector extends StatelessWidget {
@@ -15,7 +23,13 @@ class AssetSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stations = MockData.assets.map((a) => a.sc).toSet().toList();
+    // Only stations inside the signed-in user's jurisdiction.
+    final jurisdiction = Jurisdiction.of(context);
+    final stations = MockData.assets
+        .map((a) => a.sc)
+        .where(jurisdiction.allowsStation)
+        .toSet()
+        .toList();
     final types = MockData.assets.where((a) => a.sc == selected.sc).map((a) => a.assetTypeCode).toSet().toList();
     final numbers = MockData.assets
         .where((a) => a.sc == selected.sc && a.assetTypeCode == selected.assetTypeCode)

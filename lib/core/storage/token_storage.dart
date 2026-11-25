@@ -12,8 +12,6 @@ import '../constants/app_constants.dart';
 abstract class LocalStorage {
   Future<void> saveToken(String token);
   bool get hasToken;
-  Future<void> clear();
-
   Future<void> saveLastSignIn(DateTime time);
   DateTime? get lastSignIn;
 }
@@ -27,9 +25,6 @@ class LocalStorageImpl implements LocalStorage {
 
   @override
   bool get hasToken => (prefs.getString(AppConstants.tokenKey) ?? '').isNotEmpty;
-
-  @override
-  Future<void> clear() => prefs.remove(AppConstants.tokenKey);
 
   @override
   Future<void> saveLastSignIn(DateTime time) =>

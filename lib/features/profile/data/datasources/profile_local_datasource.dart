@@ -1,16 +1,18 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/auth/user_role.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/mock/mock_data.dart';
 import '../../domain/entities/user_profile.dart';
 
 /// Keeps the user's edited name and photo on the device.
-/// The read-only fields (mobile, email, role…) come from [MockData] until the
-/// user API is connected. Logout keeps the edited name and photo.
+/// The read-only fields (mobile, email, role…) come from the user saved at
+/// sign-in, falling back to [MockData]. Logout keeps the edited name and photo.
 abstract class ProfileLocalDataSource {
   UserProfile getProfile();
 
@@ -22,18 +24,33 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
   final SharedPreferences prefs;
   ProfileLocalDataSourceImpl(this.prefs);
 
+  /// The user saved at sign-in (same key the auth feature writes), or empty.
+  Map<String, dynamic> _signedInUser() {
+    final raw = prefs.getString(AppConstants.userKey);
+    if (raw == null) return const {};
+    try {
+      return jsonDecode(raw) as Map<String, dynamic>;
+    } on FormatException {
+      return const {};
+    }
+  }
+
   @override
   UserProfile getProfile() {
     final photo = prefs.getString(AppConstants.profilePhotoKey);
+    final user = _signedInUser();
+    String field(String key, String fallback) =>
+        (user[key] as String?)?.trim().isNotEmpty == true ? user[key] as String : fallback;
+
     return UserProfile(
-      name: prefs.getString(AppConstants.profileNameKey) ?? MockData.userName,
+      name: prefs.getString(AppConstants.profileNameKey) ?? field('name', MockData.userName),
       // Ignore a saved path whose file is gone (e.g. app data cleared).
       photoPath: photo != null && File(photo).existsSync() ? photo : null,
-      designation: MockData.userDesignation,
-      roleLabel: MockData.userRole.label,
-      mobile: MockData.userMobile,
-      email: MockData.userEmail,
-      jurisdiction: MockData.userJurisdiction,
+      designation: field('designation', MockData.userDesignation),
+      roleLabel: UserRole.fromCode(user['role'] as String?).label,
+      mobile: field('mobile', MockData.userMobile),
+      email: field('email', MockData.userEmail),
+      jurisdiction: field('jurisdiction', MockData.userJurisdiction),
       deviceId: MockData.deviceId,
       vendor: MockData.vendorName,
     );

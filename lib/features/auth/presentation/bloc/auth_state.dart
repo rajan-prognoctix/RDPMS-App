@@ -27,6 +27,17 @@ final class Unauthenticated extends AuthState {
   const Unauthenticated();
 }
 
+extension AuthStateUser on AuthState {
+  /// The signed-in user, or null.
+  User? get currentUser => switch (this) {
+        Authenticated(:final user) => user,
+        _ => null,
+      };
+
+  /// The signed-in user's level; [UserRole.guest] (least access) when unknown.
+  UserRole get role => currentUser?.role ?? UserRole.guest;
+}
+
 final class AuthError extends AuthState {
   final String message;
   const AuthError(this.message);

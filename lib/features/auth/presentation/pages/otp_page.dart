@@ -11,6 +11,7 @@ import '../../../../core/storage/token_storage.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/gradient_button.dart';
 import '../../../../injection_container.dart';
+import '../../../profile/presentation/cubit/profile_cubit.dart';
 import '../bloc/auth_bloc.dart';
 
 class OtpPage extends StatefulWidget {
@@ -82,7 +83,10 @@ class _OtpPageState extends State<OtpPage> {
     }
    // await _tokens.saveToken(auth.user.token);
     await _tokens.saveLastSignIn(DateTime.now());
-    if (mounted) context.go(RouteNames.dashboard);
+    if (!mounted) return;
+    // Show the signed-in user's name, role and jurisdiction in the profile.
+    context.read<ProfileCubit>().load();
+    context.go(RouteNames.dashboard);
   }
 
   void _backToLogin() => context.go(RouteNames.login);

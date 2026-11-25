@@ -7,6 +7,7 @@ class MockData {
   MockData._();
 
   // ---------------- Current user (§11.6, §11.7) ----------------
+  static const userId = 'EMP001';
   static const userName = 'Demo Maintainer';
   static const userDesignation = 'ESM';
   static const userMobile = '98XXXXXX21';
@@ -272,29 +273,5 @@ class MockData {
     StationPerformance('NCR', 'PYRJ', 'MJA', 68.20, 58.40, 71.00),
     StationPerformance('NR', 'LKO', 'LKO', 82.10, 64.90, 88.30),
     StationPerformance('NR', 'LKO', 'BBK', 55.00, 61.20, 59.80),
-  ];
-
-  // ---------------- Admin: configurable parameters (Annex D §17) ----------------
-  static final configParameters = <ConfigParameter>[
-    ConfigParameter('Maintenance-mode reminder frequency (EOP / DCT / LED)', '60 / 60 / 45 min'),
-    ConfigParameter('Failure alert feedback duration by maintainer', '4 h'),
-    ConfigParameter('Predictive alert feedback duration by maintainer', '24 h'),
-    ConfigParameter('Vendor comment duration on PT/F (failure)', '24 h'),
-    ConfigParameter('Vendor comment duration on PT/F (predictive)', '48 h'),
-    ConfigParameter('JE/SSE feedback modification duration (failure)', '48 h'),
-    ConfigParameter('JE/SSE feedback modification duration (predictive)', '72 h'),
-    ConfigParameter('First failure alert to JE/SE / SSE / ASTE-DSTE', '30 min / 1 h / 2 h'),
-    ConfigParameter('Repeat failure alert to maintainer (PM)', '2 h'),
-    ConfigParameter('Repeat predictive alert to maintainer (PM)', '12 h'),
-    ConfigParameter('Days for average operating value', '15 days'),
-    ConfigParameter('Time sync packet frequency', '7 days'),
-    ConfigParameter('Information request frequency', '30 days'),
-    ConfigParameter('Image request frequency', '7 days'),
-  ];
-
-  static final auditLog = <AuditLogEntry>[
-    AuditLogEntry(_now.subtract(const Duration(hours: 5)), 'RDPMS App', 'Failed login x3 from unregistered device for user 98XXXXXX02'),
-    AuditLogEntry(_now.subtract(const Duration(days: 1, hours: 2)), 'Station Gateway PRYJ-01', 'Unauthorised laptop connection attempt on config port'),
-    AuditLogEntry(_now.subtract(const Duration(days: 3)), 'IoT LB-3', 'Firmware access attempt without certificate'),
   ];
 }

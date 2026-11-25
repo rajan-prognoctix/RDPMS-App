@@ -7,6 +7,7 @@ import '../../../../core/utils/date_formats.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../../core/widgets/gradient_button.dart';
 import '../../../../core/widgets/status_badge.dart';
+import '../../../auth/presentation/bloc/auth_context.dart';
 import '../widgets/feedback_sheet.dart';
 
 /// Detailed technical information shown when an alert is tapped (Annex D §1).
@@ -133,7 +134,12 @@ class _AlertDetailPageState extends State<AlertDetailPage> {
             Card(
               child: Padding(
                 padding: AppSpacing.cardPadding,
-                child: a.feedback == null
+                child: a.feedback == null && !context.watchRole().canControl
+                    // Feedback is a Station-level control function (§11.6).
+                    ? const Text(
+                        'Feedback pending from the station maintainer.',
+                      )
+                    : a.feedback == null
                     ? Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [

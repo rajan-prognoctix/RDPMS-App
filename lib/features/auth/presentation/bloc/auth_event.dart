@@ -8,12 +8,17 @@ sealed class AuthEvent extends Equatable {
 }
 
 final class LoginRequested extends AuthEvent {
-  final String username;
+  final String userId;
   final String password;
-  const LoginRequested({required this.username, required this.password});
+  const LoginRequested({required this.userId, required this.password});
 
   @override
-  List<Object?> get props => [username, password];
+  List<Object?> get props => [userId, password];
+}
+
+/// App start: restore the user saved at the last sign-in.
+final class CurrentUserRequested extends AuthEvent {
+  const CurrentUserRequested();
 }
 
 final class LogoutRequested extends AuthEvent {

@@ -14,12 +14,17 @@ class AlertCard extends StatelessWidget {
   final VoidCallback onAck;
   final ValueChanged<AlertFeedback?> onFeedback;
 
+  /// Show Ack · T · PT · F · M · Remark. Only Station users have these control
+  /// functions (§11.6); others see the alert read-only.
+  final bool showActions;
+
   const AlertCard({
     super.key,
     required this.alert,
     required this.onTap,
     required this.onAck,
     required this.onFeedback,
+    this.showActions = true,
   });
 
   @override
@@ -42,8 +47,13 @@ class AlertCard extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text('${alert.sc}  ${alert.assetNumberCode}',
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                    child: Text(
+                      '${alert.sc}  ${alert.assetNumberCode}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                   StatusBadge(text: alert.type.code, color: color),
                 ],
@@ -55,22 +65,31 @@ class AlertCard extends StatelessWidget {
                 style: const TextStyle(color: Colors.black54, fontSize: 12),
               ),
               const SizedBox(height: 6),
-              Text(alert.causeCode, style: TextStyle(fontWeight: FontWeight.w600, color: color)),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _RoundButton(
-                    label: 'Ack',
-                    icon: alert.acknowledged ? Icons.check : null,
-                    active: alert.acknowledged,
-                    onTap: onAck,
-                  ),
-                  for (final f in AlertFeedback.values)
-                    _RoundButton(label: f.code, onTap: () => onFeedback(f)),
-                  _RoundButton(label: 'Remark', icon: Icons.edit_note, onTap: () => onFeedback(null)),
-                ],
+              Text(
+                alert.causeCode,
+                style: TextStyle(fontWeight: FontWeight.w600, color: color),
               ),
+              if (showActions) ...[
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _RoundButton(
+                      label: 'Ack',
+                      icon: alert.acknowledged ? Icons.check : null,
+                      active: alert.acknowledged,
+                      onTap: onAck,
+                    ),
+                    for (final f in AlertFeedback.values)
+                      _RoundButton(label: f.code, onTap: () => onFeedback(f)),
+                    _RoundButton(
+                      label: 'Remark',
+                      icon: Icons.edit_note,
+                      onTap: () => onFeedback(null),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),
@@ -85,7 +104,12 @@ class _RoundButton extends StatelessWidget {
   final bool active;
   final VoidCallback onTap;
 
-  const _RoundButton({required this.label, this.icon, this.active = false, required this.onTap});
+  const _RoundButton({
+    required this.label,
+    this.icon,
+    this.active = false,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -93,8 +117,14 @@ class _RoundButton extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Material(
-          shape: CircleBorder(side: BorderSide(color: active ? AppColors.healthy : AppColors.border)),
-          color: active ? AppColors.healthy.withValues(alpha: 0.1) : Colors.white,
+          shape: CircleBorder(
+            side: BorderSide(
+              color: active ? AppColors.healthy : AppColors.border,
+            ),
+          ),
+          color: active
+              ? AppColors.healthy.withValues(alpha: 0.1)
+              : Colors.white,
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: onTap,
@@ -103,14 +133,24 @@ class _RoundButton extends StatelessWidget {
               height: 42,
               child: Center(
                 child: icon != null
-                    ? Icon(icon, size: 20, color: active ? AppColors.healthy : Colors.black87)
-                    : Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
+                    ? Icon(
+                        icon,
+                        size: 20,
+                        color: active ? AppColors.healthy : Colors.black87,
+                      )
+                    : Text(
+                        label,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
               ),
             ),
           ),
         ),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 10, color: Colors.black54)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 10, color: Colors.black54),
+        ),
       ],
     );
   }

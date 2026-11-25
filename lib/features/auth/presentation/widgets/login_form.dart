@@ -20,13 +20,13 @@ class LoginForm extends StatefulWidget {
 
 class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
-  final _username = TextEditingController();
+  final _userId = TextEditingController();
   final _password = TextEditingController();
   bool _obscure = true;
 
   @override
   void dispose() {
-    _username.dispose();
+    _userId.dispose();
     _password.dispose();
     super.dispose();
   }
@@ -35,7 +35,7 @@ class _LoginFormState extends State<LoginForm> {
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
     context.read<AuthBloc>().add(
-          LoginRequested(username: _username.text.trim(), password: _password.text),
+          LoginRequested(userId: _userId.text.trim(), password: _password.text),
         );
   }
 
@@ -62,6 +62,17 @@ class _LoginFormState extends State<LoginForm> {
 
   Widget _field(String label, Widget input) => LabeledField(label: label, child: input);
 
+  Widget _linkButton(String label, String route) => TextButton(
+        onPressed: () => context.push(route),
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          minimumSize: const Size(44, 44),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        ),
+        child: Text(label),
+      );
+
   @override
   Widget build(BuildContext context) {
     final isLoading = context.select((AuthBloc b) => b.state is AuthLoading);
@@ -76,14 +87,14 @@ class _LoginFormState extends State<LoginForm> {
           _field(
             'User ID',
             TextFormField(
-              controller: _username,
+              controller: _userId,
               style: inputStyle,
               decoration: _decoration(hint: 'Enter your User ID', icon: Icons.person_outline),
               validator: (v) => Validators.required(v, 'User id'),
               textInputAction: TextInputAction.next,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 25),
           _field(
             'Password',
             TextFormField(
@@ -104,22 +115,16 @@ class _LoginFormState extends State<LoginForm> {
               onFieldSubmitted: (_) => _submit(),
             ),
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () => context.push(RouteNames.forgotPassword),
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                minimumSize: const Size(44, 44),
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-              ),
-              child: const Text('Forgot password?'),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _linkButton('Forgot User ID?', RouteNames.forgotUserId),
+              _linkButton('Forgot password?', RouteNames.forgotPassword),
+            ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 25),
           GradientButton(
-            label: 'Sign in with OTP',
+            label: 'Sign in',
             icon: Icons.arrow_forward,
             loading: isLoading,
             onPressed: _submit,

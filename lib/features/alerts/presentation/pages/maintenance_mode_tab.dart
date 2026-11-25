@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/auth/jurisdiction.dart';
 import '../../../../core/mock/mock_data.dart';
 import '../../../../core/mock/mock_models.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -22,7 +23,11 @@ class _MaintenanceModeTabState extends State<MaintenanceModeTab> {
   DateTime _from = DateTime.now();
   DateTime _to = DateTime.now().add(const Duration(hours: 1));
 
-  List<String> get _stations => MockData.assets.map((a) => a.sc).toSet().toList();
+  /// Stations inside the signed-in user's jurisdiction.
+  List<String> get _stations {
+    final j = Jurisdiction.of(context);
+    return MockData.assets.map((a) => a.sc).where(j.allowsStation).toSet().toList();
+  }
 
   Future<DateTime?> _pick(DateTime initial) async {
     final d = await showDatePicker(
@@ -66,7 +71,10 @@ class _MaintenanceModeTabState extends State<MaintenanceModeTab> {
   @override
   Widget build(BuildContext context) {
     final assets = MockData.assets.where((a) => a.sc == _station).toList();
-    final active = MockData.maintenanceModes.where((m) => m.to.isAfter(DateTime.now())).toList();
+    final jurisdiction = Jurisdiction.of(context);
+    final active = MockData.maintenanceModes
+        .where((m) => m.to.isAfter(DateTime.now()) && jurisdiction.allowsStation(m.sc))
+        .toList();
 
     return ListView(
       padding: AppSpacing.screenPadding,

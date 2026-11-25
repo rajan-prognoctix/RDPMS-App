@@ -9,6 +9,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/app_dropdown.dart';
 import '../../../../core/widgets/common_widgets.dart';
 import '../../../../core/widgets/filter_bar.dart';
+import '../../../auth/presentation/bloc/auth_context.dart';
 import '../widgets/alert_card.dart';
 import '../widgets/feedback_sheet.dart';
 
@@ -47,6 +48,7 @@ class _AlertLiveTabState extends State<AlertLiveTab> {
     final failure = alerts.where((a) => a.type == AlertType.failure).length;
     final predictive = alerts.length - failure;
     final normal = MockData.dashboardGroups.fold(0, (s, g) => s + g.healthy);
+    final canControl = context.watchRole().canControl;
 
     return ListView(
       children: [
@@ -99,6 +101,7 @@ class _AlertLiveTabState extends State<AlertLiveTab> {
                         ..showSnackBar(SnackBar(content: Text('${a.assetNumberCode} alert acknowledged')));
                     },
                     onFeedback: (f) => _feedback(a, f),
+                    showActions: canControl,
                   )),
             ],
           ),

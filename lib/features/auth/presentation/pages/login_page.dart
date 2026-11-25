@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/mock/mock_data.dart';
 import '../../../../core/routes/route_names.dart';
@@ -12,13 +11,9 @@ import '../../../../core/widgets/track_art_painter.dart';
 import '../bloc/auth_bloc.dart';
 import '../widgets/login_form.dart';
 
-/// Landing page (Annex E/G): title, vendor name, user id, password, Sign in for new user.
-/// Sign-in is always OTP based (§11.7) and limited to one mobile per user (§11.8).
-/// Based on the M01 Login mobile design, with a gradient header (navy shades only).
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
-  /// How far the form card overlaps the header.
   static const double _overlap = 56;
 
   @override
@@ -27,7 +22,6 @@ class LoginPage extends StatelessWidget {
 
     return MultiBlocListener(
       listeners: [
-        // Fresh login → OTP device authentication (§11.7).
         BlocListener<AuthBloc, AuthState>(
           listenWhen: (prev, curr) => prev is AuthLoading && curr is Authenticated,
           listener: (context, _) => context.go(RouteNames.otp),
@@ -66,34 +60,7 @@ class LoginPage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 const _FormCard(),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Text(
-                                      'New to RDPMS?',
-                                      style: TextStyle(fontSize: 14, color: AppColors.textMuted),
-                                    ),
-                                    SizedBox(width: 15),
-                                    TextButton(
-                                      onPressed: () => context.push(RouteNames.register),
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: AppColors.primary,
-                                        minimumSize: const Size(44, 44),
-                                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                                        textStyle: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      child: const Text('Sign in for New User'),
-                                    ),
-                                  ],
-                                ),
                                 const Spacer(),
-                                const SizedBox(height: 12),
-                                const _SignInInfoCard(),
-                                const SizedBox(height: 16),
                                 const _LegalLine(),
                               ],
                             ),
@@ -229,51 +196,14 @@ class _FormCard extends StatelessWidget {
             'Welcome back',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.navy),
           ),
-          SizedBox(height: 4),
+          SizedBox(height: 6),
           Text(
-            'Sign in with your User ID and password. An OTP will be sent to your registered mobile.',
+            'Sign in with your User ID and password. A one-time OTP will be sent to your '
+            'registered mobile to link this device. Your account can be used on only one mobile device and one laptop device.',
             style: TextStyle(fontSize: 13, height: 1.5, color: AppColors.textMuted),
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 30),
           LoginForm(),
-        ],
-      ),
-    );
-  }
-}
-
-/// One-line sign-in rules: OTP based (§11.7) and single mobile device (§11.8).
-class _SignInInfoCard extends StatelessWidget {
-  const _SignInInfoCard();
-
-  static const _textStyle = TextStyle(
-    fontSize: 13,
-    fontWeight: FontWeight.w500,
-    color: AppColors.textMuted,
-  );
-
-  static Widget _item(IconData icon, String label) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: AppColors.primary),
-          const SizedBox(width: 6),
-          Text(label, style: _textStyle),
-        ],
-      );
-
-  @override
-  Widget build(BuildContext context) {
-    return FittedBox(
-      fit: BoxFit.scaleDown,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _item(Icons.sms_outlined, 'OTP-based sign in'),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            child: Text('•', style: _textStyle),
-          ),
-          _item(Icons.phone_android_outlined, 'Single mobile device'),
         ],
       ),
     );

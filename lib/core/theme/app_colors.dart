@@ -39,6 +39,12 @@ class AppColors {
   static const Color failure = Color(0xFFB3261E);
   static const Color neutral = Color(0xFF607D8B);
 
+  // Soft badge backgrounds (M20 Admin user status)
+  static const Color healthySoft = Color(0xFFE6F4EC);
+  static const Color predictiveSoft = Color(0xFFFDF0E1);
+  static const Color neutralSoft = Color(0xFFEEF1F6);
+  static const Color failureSoft = Color(0xFFFBE7E6);
+
   // Surfaces
   static const Color surfaceMuted = Color(0xFFF3F5F8); // screen background
   static const Color backdrop = Color(0xFFE9EDF3);

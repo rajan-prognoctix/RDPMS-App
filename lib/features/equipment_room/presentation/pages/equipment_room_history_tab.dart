@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/auth/jurisdiction.dart';
 import '../../../../core/mock/mock_data.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -24,7 +25,17 @@ class _EquipmentRoomHistoryTabState extends State<EquipmentRoomHistoryTab> {
 
   @override
   Widget build(BuildContext context) {
-    final stations = MockData.equipmentRooms.map((r) => r.sc).toSet().toList();
+    // Only stations inside the signed-in user's jurisdiction.
+    final jurisdiction = Jurisdiction.of(context);
+    final stations = MockData.equipmentRooms
+        .map((r) => r.sc)
+        .where(jurisdiction.allowsStation)
+        .toSet()
+        .toList();
+    if (stations.isEmpty) {
+      return const EmptyState('No equipment rooms in your jurisdiction', icon: Icons.meeting_room_outlined);
+    }
+    if (!stations.contains(_station)) _station = stations.first;
     final rooms = MockData.equipmentRooms.where((r) => r.sc == _station).map((r) => r.roomTypeCode).toList();
     final room = rooms.contains(_room) ? _room : rooms.first;
     final reading = MockData.equipmentRooms.firstWhere((r) => r.sc == _station && r.roomTypeCode == room);

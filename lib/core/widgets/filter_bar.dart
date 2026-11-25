@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../auth/jurisdiction.dart';
 import '../mock/mock_data.dart';
 import '../mock/mock_models.dart';
 import '../theme/app_spacing.dart';
@@ -33,6 +34,11 @@ class LocationFilter {
 
 /// Header filter row: Zone ▸ Division ▸ Station (cascading) + page-specific
 /// filters + search icon. Results update only after search is tapped (Annex E §5).
+///
+/// The lists follow the signed-in user's [Jurisdiction]: levels fixed for the
+/// user are shown locked, and only places inside the jurisdiction are offered
+/// ("All" means all within it). On first build it reports the jurisdiction
+/// filter through [onSearch], so pages never show data outside it.
 class FilterBar extends StatefulWidget {
   final ValueChanged<LocationFilter> onSearch;
   final List<Widget> extraFilters;
@@ -53,15 +59,40 @@ class _FilterBarState extends State<FilterBar> {
   Zone? _zone;
   Division? _division;
   Station? _station;
+  Jurisdiction? _applied;
 
-  List<Division> get _divisions =>
-      _zone?.divisions ?? MockData.zones.expand((z) => z.divisions).toList();
-
-  List<Station> get _stations =>
-      _division?.stations ?? _divisions.expand((d) => d.stations).toList();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final j = Jurisdiction.of(context);
+    if (j == _applied) return;
+    // New user / first build: start from the jurisdiction and limit results to it.
+    _applied = j;
+    _zone = null;
+    _division = null;
+    _station = null;
+    if (j.isRestricted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.onSearch(j.filter);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final j = Jurisdiction.of(context);
+    final zones = j.zones;
+    final zoneLocked = j.zc != null;
+    final zone = zoneLocked ? zones.firstOrNull : _zone;
+
+    final divisions = j.divisionsIn(zone);
+    final divisionLocked = j.dc != null;
+    final division = divisionLocked ? divisions.firstOrNull : _division;
+
+    final stations = j.stationsIn(division, zone: zone);
+    final stationLocked = j.sc != null;
+    final station = stationLocked ? stations.firstOrNull : _station;
+
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 10, AppSpacing.screen, 10),
@@ -72,9 +103,11 @@ class _FilterBarState extends State<FilterBar> {
         children: [
           AppDropdown<Zone>(
             label: 'Zone',
-            value: _zone,
-            items: MockData.zones,
+            value: zone,
+            items: zones,
             itemLabel: (z) => z.zc,
+            enabled: !zoneLocked,
+            allowAll: !zoneLocked,
             onChanged: (z) => setState(() {
               _zone = z;
               _division = null;
@@ -83,9 +116,11 @@ class _FilterBarState extends State<FilterBar> {
           ),
           AppDropdown<Division>(
             label: 'Division',
-            value: _division,
-            items: _divisions,
+            value: division,
+            items: divisions,
             itemLabel: (d) => d.dc,
+            enabled: !divisionLocked,
+            allowAll: !divisionLocked,
             onChanged: (d) => setState(() {
               _division = d;
               _station = null;
@@ -94,17 +129,24 @@ class _FilterBarState extends State<FilterBar> {
           if (widget.showStation)
             AppDropdown<Station>(
               label: 'Station',
-              value: _station,
-              items: _stations,
+              value: station,
+              items: stations,
               itemLabel: (s) => s.sc,
+              enabled: !stationLocked,
+              allowAll: !stationLocked,
               onChanged: (s) => setState(() => _station = s),
             ),
           ...widget.extraFilters,
           IconButton.filled(
             tooltip: 'Search',
             icon: const Icon(Icons.search),
+            // "All" at an open level still means all within the jurisdiction.
             onPressed: () => widget.onSearch(
-              LocationFilter(zc: _zone?.zc, dc: _division?.dc, sc: _station?.sc),
+              LocationFilter(
+                zc: zone?.zc ?? j.zc,
+                dc: division?.dc ?? j.dc,
+                sc: station?.sc ?? j.sc,
+              ),
             ),
           ),
         ],

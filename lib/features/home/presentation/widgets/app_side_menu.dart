@@ -10,7 +10,9 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/logout_dialog.dart';
 import '../../../../core/widgets/track_art_painter.dart';
 import '../../../../core/widgets/user_avatar.dart';
+import '../../../../core/auth/user_role.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_context.dart';
 import '../../../profile/presentation/cubit/profile_cubit.dart';
 
 /// Left side menu for the bottom-navigation tabs: user profile header (same
@@ -22,14 +24,19 @@ class AppSideMenu extends StatelessWidget {
 
   const AppSideMenu({super.key, this.photoUrl});
 
-  static const _items = [
-    (Icons.inventory_2_outlined, 'Asset Detail', RouteNames.assetDetail),
-    (Icons.bar_chart, 'Asset Utilization', RouteNames.assetUtilization),
-    (Icons.speed, 'Performance', RouteNames.performance),
-    (Icons.admin_panel_settings_outlined, 'Admin', RouteNames.admin),
-    (Icons.person_outline, 'User Profile', RouteNames.profile),
-    (Icons.menu_book_outlined, 'Help & training', RouteNames.profile),
-  ];
+  /// Menu items for [role] (§11.6, Annex E §1): reports (Asset, Performance)
+  /// are hidden from Guest users, Admin is shown to HQ and Division users only.
+  static List<(IconData, String, String)> _itemsFor(UserRole role) => [
+        if (role.canViewReports) ...[
+          (Icons.inventory_2_outlined, 'Asset Detail', RouteNames.assetDetail),
+          (Icons.bar_chart, 'Asset Utilization', RouteNames.assetUtilization),
+          (Icons.speed, 'Performance', RouteNames.performance),
+        ],
+        if (role.canOpenAdmin)
+          (Icons.admin_panel_settings_outlined, 'Admin', RouteNames.admin),
+        (Icons.person_outline, 'User Profile', RouteNames.profile),
+        (Icons.menu_book_outlined, 'Help & training', RouteNames.profile),
+      ];
 
   /// How long the drawer takes to close (Flutter's drawer settle time is 246 ms).
   static const _drawerCloseDuration = Duration(milliseconds: 220);
@@ -55,6 +62,7 @@ class AppSideMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final items = _itemsFor(context.watchRole());
 
     return Drawer(
       backgroundColor: Colors.white,
@@ -73,7 +81,7 @@ class AppSideMenu extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
-                for (final (icon, label, route) in _items)
+                for (final (icon, label, route) in items)
                   _MenuTile(icon: icon, label: label, onTap: () => _open(context, route)),
               ],
             ),
@@ -167,13 +175,14 @@ class _ProfileHeader extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${MockData.userDesignation} · ${MockData.userRole.label} level user',
+                      '${profile?.designation ?? MockData.userDesignation} · '
+                      '${context.watchRole().label} level user',
                       style: const TextStyle(color: AppColors.onNavyMuted, fontSize: 13),
                     ),
                     const SizedBox(height: 2),
-                    const Text(
-                      MockData.userJurisdiction,
-                      style: TextStyle(color: AppColors.onNavyMuted, fontSize: 13),
+                    Text(
+                      profile?.jurisdiction ?? MockData.userJurisdiction,
+                      style: const TextStyle(color: AppColors.onNavyMuted, fontSize: 13),
                     ),
                   ],
                 ),

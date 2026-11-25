@@ -5,10 +5,16 @@ import 'core/constants/app_constants.dart';
 import 'core/network/api_client.dart';
 import 'core/services/photo_picker_service.dart';
 import 'core/storage/token_storage.dart';
+import 'features/admin/data/datasources/admin_local_datasource.dart';
+import 'features/admin/data/repositories/admin_repository_impl.dart';
+import 'features/admin/domain/repositories/admin_repository.dart';
+import 'features/admin/domain/usecases/admin_usecases.dart';
+import 'features/admin/presentation/cubit/admin_cubit.dart';
 import 'features/auth/data/datasources/auth_local_datasource.dart';
 import 'features/auth/data/datasources/auth_remote_datasource.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
+import 'features/auth/domain/usecases/get_current_user.dart';
 import 'features/auth/domain/usecases/login.dart';
 import 'features/auth/domain/usecases/logout.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
@@ -36,6 +42,33 @@ Future<void> initDependencies() async {
 
   // ---------- Feature: Profile ----------
   _initProfile();
+
+  // ---------- Feature: Admin ----------
+  _initAdmin();
+}
+
+void _initAdmin() {
+  // Singleton so users created in this session stay in the mock list.
+  sl.registerLazySingleton<AdminLocalDataSource>(() => AdminLocalDataSourceImpl());
+  sl.registerLazySingleton<AdminRepository>(() => AdminRepositoryImpl(local: sl()));
+  sl.registerLazySingleton(() => GetUsers(sl()));
+  sl.registerLazySingleton(() => CreateUser(sl()));
+  sl.registerLazySingleton(() => UpdateUser(sl()));
+  sl.registerLazySingleton(() => ApproveDevice(sl()));
+  sl.registerLazySingleton(() => SetUserDisabled(sl()));
+  sl.registerLazySingleton(() => GetConfigSettings(sl()));
+  sl.registerLazySingleton(() => UpdateConfigSetting(sl()));
+  sl.registerLazySingleton(() => GetAuditLog(sl()));
+  sl.registerFactory(() => AdminCubit(
+        getUsers: sl(),
+        createUser: sl(),
+        updateUser: sl(),
+        approveDevice: sl(),
+        setUserDisabled: sl(),
+        getConfigSettings: sl(),
+        updateConfigSetting: sl(),
+        getAuditLog: sl(),
+      ));
 }
 
 void _initProfile() {
@@ -57,7 +90,8 @@ void _initAuth() {
   // Use cases
   sl.registerLazySingleton(() => Login(sl()));
   sl.registerLazySingleton(() => Logout(sl()));
+  sl.registerLazySingleton(() => GetCurrentUser(sl()));
 
   // Bloc (factory: new instance each time it's requested)
-  sl.registerFactory(() => AuthBloc(login: sl(), logout: sl()));
+  sl.registerFactory(() => AuthBloc(login: sl(), logout: sl(), getCurrentUser: sl()));
 }

@@ -7,6 +7,7 @@ class RouteNames {
   static const String otp = '/otp';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
+  static const String forgotUserId = '/forgot-user-id';
 
   // Legal
   static const String privacyPolicy = '/privacy-policy';
@@ -25,6 +26,8 @@ class RouteNames {
   static const String assetUtilization = '/asset-utilization';
   static const String performance = '/performance';
   static const String admin = '/admin';
+  static const String adminCreateUser = '/admin/create-user';
+  static const String adminEditUser = '/admin/edit-user';
   static const String profile = '/profile';
   static const String editProfile = '/profile/edit';
 }
